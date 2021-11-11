@@ -10,11 +10,6 @@ import mmcv
 from mmcv.parallel import is_module_wrapper
 from mmcv.runner.checkpoint import weights_to_cpu, get_state_dict
 
-try:
-    import apex
-except:
-    print('apex is not installed')
-
 
 def save_checkpoint(model, filename, optimizer=None, meta=None):
     """Save checkpoint to file.
@@ -54,32 +49,9 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         for name, optim in optimizer.items():
             checkpoint['optimizer'][name] = optim.state_dict()
 
-    # save amp state dict in the checkpoint
-    checkpoint['amp'] = apex.amp.state_dict()
 
-    if filename.startswith('pavi://'):
-        try:
-            from pavi import modelcloud
-            from pavi.exception import NodeNotFoundError
-        except ImportError:
-            raise ImportError(
-                'Please install pavi to load checkpoint from modelcloud.')
-        model_path = filename[7:]
-        root = modelcloud.Folder()
-        model_dir, model_name = osp.split(model_path)
-        try:
-            model = modelcloud.get(model_dir)
-        except NodeNotFoundError:
-            model = root.create_training_model(model_dir)
-        with TemporaryDirectory() as tmp_dir:
-            checkpoint_file = osp.join(tmp_dir, model_name)
-            with open(checkpoint_file, 'wb') as f:
-                torch.save(checkpoint, f)
-                f.flush()
-            model.create_file(checkpoint_file, name=model_name)
-    else:
-        mmcv.mkdir_or_exist(osp.dirname(filename))
-        # immediately flush buffer
-        with open(filename, 'wb') as f:
-            torch.save(checkpoint, f)
-            f.flush()
+    mmcv.mkdir_or_exist(osp.dirname(filename))
+    # immediately flush buffer
+    with open(filename, 'wb') as f:
+        torch.save(checkpoint, f)
+        f.flush()

@@ -10,7 +10,7 @@
 # https://github.com/facebookresearch/xcit/
 # https://github.com/microsoft/Swin-Transformer
 # --------------------------------------------------------'
-norm_cfg = dict(type='SyncBN', requires_grad=True)
+norm_cfg = dict(type='BN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
     pretrained=None,
@@ -36,7 +36,9 @@ model = dict(
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)
+        ),
+
     auxiliary_head=dict(
         type='FCNHead',
         in_channels=384,

@@ -336,7 +336,7 @@ class BEiT(nn.Module):
         if patch_size == 16:
             self.fpn1 = nn.Sequential(
                 nn.ConvTranspose2d(embed_dim, embed_dim, kernel_size=2, stride=2),
-                nn.SyncBatchNorm(embed_dim),
+                nn.BatchNorm2d(embed_dim),
                 nn.GELU(),
                 nn.ConvTranspose2d(embed_dim, embed_dim, kernel_size=2, stride=2),
             )
@@ -416,6 +416,7 @@ class BEiT(nn.Module):
         return {'pos_embed', 'cls_token'}
 
     def forward_features(self, x):
+        x = x.data[0]
         B, C, H, W = x.shape
         x, (Hp, Wp) = self.patch_embed(x)
         batch_size, seq_len, _ = x.size()
@@ -439,6 +440,7 @@ class BEiT(nn.Module):
 
         ops = [self.fpn1, self.fpn2, self.fpn3, self.fpn4]
         for i in range(len(features)):
+            print(features[i].shape)
             features[i] = ops[i](features[i])
 
         return tuple(features)

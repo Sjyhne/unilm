@@ -10,11 +10,6 @@ import mmcv
 from mmcv.runner import RUNNERS, IterBasedRunner
 from .checkpoint import save_checkpoint
 
-try:
-    import apex
-except:
-    print('apex is not installed')
-
 
 @RUNNERS.register_module()
 class IterBasedRunnerAmp(IterBasedRunner):
@@ -96,8 +91,5 @@ class IterBasedRunnerAmp(IterBasedRunner):
                     'Optimizer should be dict or torch.optim.Optimizer '
                     f'but got {type(self.optimizer)}')
 
-        if 'amp' in checkpoint:
-            apex.amp.load_state_dict(checkpoint['amp'])
-            self.logger.info('load amp state dict')
 
         self.logger.info(f'resumed from epoch: {self.epoch}, iter {self.iter}')

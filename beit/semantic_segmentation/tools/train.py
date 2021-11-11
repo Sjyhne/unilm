@@ -5,7 +5,6 @@ import os.path as osp
 import time
 
 import mmcv
-import mmcv_custom
 import torch
 from mmcv.runner import init_dist
 from mmcv.utils import Config, DictAction, get_git_hash
@@ -18,7 +17,6 @@ from mmseg.models import build_segmentor
 from mmseg.utils import collect_env, get_root_logger
 
 from backbone import beit
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
