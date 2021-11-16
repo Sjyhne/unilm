@@ -51,9 +51,8 @@ def train_one_epoch(model: torch.nn.Module, d_vae: torch.nn.Module,
             bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)
             labels = input_ids[bool_masked_pos]
 
-        with torch.cuda.amp.autocast():
-            outputs = model(samples, bool_masked_pos=bool_masked_pos, return_all_tokens=False)
-            loss = nn.CrossEntropyLoss()(input=outputs, target=labels)
+        outputs = model(samples, bool_masked_pos=bool_masked_pos, return_all_tokens=False)
+        loss = nn.CrossEntropyLoss()(input=outputs, target=labels)
 
         loss_value = loss.item()
 
@@ -66,9 +65,6 @@ def train_one_epoch(model: torch.nn.Module, d_vae: torch.nn.Module,
         is_second_order = hasattr(optimizer, 'is_second_order') and optimizer.is_second_order
         grad_norm = loss_scaler(loss, optimizer, clip_grad=max_norm,
                                 parameters=model.parameters(), create_graph=is_second_order)
-        loss_scale_value = loss_scaler.state_dict()["scale"]
-
-        torch.cuda.synchronize()
 
         mlm_acc = (outputs.max(-1)[1] == labels).float().mean().item()
 
@@ -77,7 +73,6 @@ def train_one_epoch(model: torch.nn.Module, d_vae: torch.nn.Module,
             log_writer.update(mlm_acc=mlm_acc, head="loss")
 
         metric_logger.update(loss=loss_value)
-        metric_logger.update(loss_scale=loss_scale_value)
         min_lr = 10.
         max_lr = 0.
         for group in optimizer.param_groups:
@@ -95,7 +90,6 @@ def train_one_epoch(model: torch.nn.Module, d_vae: torch.nn.Module,
 
         if log_writer is not None:
             log_writer.update(loss=loss_value, head="loss")
-            log_writer.update(loss_scale=loss_scale_value, head="opt")
             log_writer.update(lr=max_lr, head="opt")
             log_writer.update(min_lr=min_lr, head="opt")
             log_writer.update(weight_decay=weight_decay_value, head="opt")
@@ -106,6 +100,5 @@ def train_one_epoch(model: torch.nn.Module, d_vae: torch.nn.Module,
         if lr_scheduler is not None:
             lr_scheduler.step_update(start_steps + step)
     # gather the stats from all processes
-    metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
