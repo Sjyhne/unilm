@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Custom
+beit/semantic_segmentation/work_dirs
+beit/semantic_segmentation/model_checkpoints

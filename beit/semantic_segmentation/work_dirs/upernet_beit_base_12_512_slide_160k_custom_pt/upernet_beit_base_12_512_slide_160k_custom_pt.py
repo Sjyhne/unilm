@@ -44,7 +44,7 @@ model = dict(
     train_cfg=dict(),
     test_cfg=dict(mode='slide', crop_size=(512, 512), stride=(341, 341)))
 dataset_type = 'AerialImages'
-data_root = '/home/sj/kartai/building_segmentation/datasets/aerial_512'
+data_root = '/home/sandej17/building_segmentation/datasets/aerial_512'
 img_norm_cfg = dict(
     mean=[88.995, 97.073, 95.582], std=[68.66, 65.887, 67.55], to_rgb=True)
 crop_size = (512, 512)
@@ -58,8 +58,9 @@ train_pipeline = [
         mean=[88.995, 97.073, 95.582],
         std=[68.66, 65.887, 67.55],
         to_rgb=True),
-    dict(type='Pad', size=(512, 512), pad_val=0, seg_pad_val=255),
-    dict(type='DefaultFormatBundle'),
+    dict(type='Pad', size=(512, 512), pad_val=0, seg_pad_val=0),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='ImageToLongTensor', keys=['gt_semantic_seg']),
     dict(type='Collect', keys=['img', 'gt_semantic_seg'])
 ]
 test_pipeline = [
@@ -67,10 +68,8 @@ test_pipeline = [
     dict(
         type='MultiScaleFlipAug',
         img_scale=(2048, 512),
-        flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
-            dict(type='RandomFlip'),
             dict(
                 type='Normalize',
                 mean=[88.995, 97.073, 95.582],
@@ -81,11 +80,11 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=4,
+    samples_per_gpu=2,
+    workers_per_gpu=1,
     train=dict(
         type='AerialImages',
-        data_root='/home/sj/kartai/building_segmentation/datasets/aerial_512',
+        data_root='/home/sandej17/building_segmentation/datasets/aerial_512',
         img_dir='img_dir/train',
         ann_dir='ann_dir/train',
         pipeline=[
@@ -98,13 +97,14 @@ data = dict(
                 mean=[88.995, 97.073, 95.582],
                 std=[68.66, 65.887, 67.55],
                 to_rgb=True),
-            dict(type='Pad', size=(512, 512), pad_val=0, seg_pad_val=255),
-            dict(type='DefaultFormatBundle'),
+            dict(type='Pad', size=(512, 512), pad_val=0, seg_pad_val=0),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='ImageToLongTensor', keys=['gt_semantic_seg']),
             dict(type='Collect', keys=['img', 'gt_semantic_seg'])
         ]),
     val=dict(
         type='AerialImages',
-        data_root='/home/sj/kartai/building_segmentation/datasets/aerial_512',
+        data_root='/home/sandej17/building_segmentation/datasets/aerial_512',
         img_dir='img_dir/test',
         ann_dir='ann_dir/test',
         pipeline=[
@@ -112,10 +112,8 @@ data = dict(
             dict(
                 type='MultiScaleFlipAug',
                 img_scale=(2048, 512),
-                flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
-                    dict(type='RandomFlip'),
                     dict(
                         type='Normalize',
                         mean=[88.995, 97.073, 95.582],
@@ -127,7 +125,7 @@ data = dict(
         ]),
     test=dict(
         type='AerialImages',
-        data_root='/home/sj/kartai/building_segmentation/datasets/aerial_512',
+        data_root='/home/sandej17/building_segmentation/datasets/aerial_512',
         img_dir='img_dir/val',
         ann_dir='ann_dir/val',
         pipeline=[
@@ -135,10 +133,8 @@ data = dict(
             dict(
                 type='MultiScaleFlipAug',
                 img_scale=(2048, 512),
-                flip=False,
                 transforms=[
                     dict(type='Resize', keep_ratio=True),
-                    dict(type='RandomFlip'),
                     dict(
                         type='Normalize',
                         mean=[88.995, 97.073, 95.582],
@@ -155,7 +151,7 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-cudnn_benchmark = True
+cudnn_benchmark = False
 optimizer = dict(
     type='AdamW',
     lr=0.0007,
@@ -180,7 +176,7 @@ lr_config = dict(
     by_epoch=False)
 runner = dict(type='IterBasedRunnerAmp', max_iters=160000)
 checkpoint_config = dict(by_epoch=False, interval=16000)
-evaluation = dict(interval=16000, metric='mIoU')
+evaluation = dict(interval=100, metric='mIoU')
 fp16 = None
 work_dir = './work_dirs/upernet_beit_base_12_512_slide_160k_custom_pt'
 gpu_ids = range(0, 1)

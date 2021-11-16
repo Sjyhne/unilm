@@ -68,22 +68,22 @@ def train_segmentor(model,
                     m.fp16_enabled = True"""
 
     # put model on gpus
-    if distributed:
-        find_unused_parameters = cfg.get('find_unused_parameters', False)
-        # Sets the `find_unused_parameters` parameter in
-        # torch.nn.parallel.DistributedDataParallel
-        model = MMDistributedDataParallel(
-            model.cuda(),
-            device_ids=[torch.cuda.current_device()],
-            broadcast_buffers=False,
-            find_unused_parameters=find_unused_parameters)
+    #if distributed:
+    #    find_unused_parameters = cfg.get('find_unused_parameters', False)
+    #    # Sets the `find_unused_parameters` parameter in
+    #    # torch.nn.parallel.DistributedDataParallel
+    #    model = MMDistributedDataParallel(
+    #        model.cuda(),
+    #        device_ids=[torch.cuda.current_device()],
+    #        broadcast_buffers=False,
+    #        find_unused_parameters=find_unused_parameters)
+    #else:
+    if device == "cpu":
+        model = model.cpu()
     else:
-        if device == "cpu":
-            model = model.cpu()
-        else:
-            model = MMDataParallel(
-                model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids
-            )
+        model = MMDataParallel(
+            model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids
+        )
 
     if cfg.get('runner') is None:
         cfg.runner = {'type': 'IterBasedRunner', 'max_iters': cfg.total_iters}
@@ -110,6 +110,7 @@ def train_segmentor(model,
     runner.timestamp = timestamp
 
     # register eval hooks
+    print(validate)
     if validate:
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
         val_dataloader = build_dataloader(
@@ -122,9 +123,15 @@ def train_segmentor(model,
         eval_cfg['by_epoch'] = 'IterBasedRunner' not in cfg.runner['type']
         eval_hook = DistEvalHook if distributed else EvalHook
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
-
+        
     if cfg.resume_from:
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
+        
+    img, lab = next(iter(data_loaders[0]))
+    
+    print(img)
+    print(lab)
+    
     runner.run(data_loaders, cfg.workflow)

@@ -4,14 +4,18 @@ import os
 import os.path as osp
 import time
 
+import numpy as np
+
 import mmcv
 import torch
 from mmcv.runner import init_dist
 from mmcv.utils import Config, DictAction, get_git_hash
 
+import matplotlib.pyplot as plt
+
 from mmseg import __version__
 from mmseg.apis import set_random_seed
-from mmcv_custom import train_segmentor
+from mmseg.apis import train_segmentor
 from mmseg.datasets import build_dataset
 from mmseg.models import build_segmentor
 from mmseg.utils import collect_env, get_root_logger
@@ -54,7 +58,7 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
-    parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument('--local_rank', type=int, default=os.environ["LOCAL_RANK"])
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -135,7 +139,9 @@ def main():
         test_cfg=cfg.get('test_cfg'))
 
     logger.info(model)
-
+    
+    print(cfg.data.train)
+    
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
         val_dataset = copy.deepcopy(cfg.data.val)
@@ -150,7 +156,14 @@ def main():
             CLASSES=datasets[0].CLASSES,
             PALETTE=datasets[0].PALETTE)
     # add an attribute for visualization convenience
+    print(datasets[0].CLASSES)
+    print(len(datasets[0].PALETTE))
     model.CLASSES = datasets[0].CLASSES
+    print(datasets[0][0]["gt_semantic_seg"])
+    print(np.unique(datasets[0][0]["gt_semantic_seg"]))
+    print(datasets[0].ignore_index)
+    print(datasets[0].label_map)
+    
     train_segmentor(
         model,
         datasets,

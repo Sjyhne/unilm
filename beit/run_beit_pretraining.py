@@ -130,6 +130,7 @@ def get_args():
     parser.add_argument('--local_rank', default=-1, type=int)
     parser.add_argument('--dist_on_itp', action='store_true')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
+    parser.add_argument('--nb_classes', default=2, help="Number of classes to predict")
 
     return parser.parse_args()
 
@@ -151,7 +152,7 @@ def get_model(args):
 
 def main(args):
     utils.init_distributed_mode(args)
-
+    
     print(args)
 
     device = torch.device(args.device)

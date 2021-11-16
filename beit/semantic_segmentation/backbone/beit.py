@@ -416,7 +416,6 @@ class BEiT(nn.Module):
         return {'pos_embed', 'cls_token'}
 
     def forward_features(self, x):
-        x = x.data[0]
         B, C, H, W = x.shape
         x, (Hp, Wp) = self.patch_embed(x)
         batch_size, seq_len, _ = x.size()
@@ -440,11 +439,10 @@ class BEiT(nn.Module):
 
         ops = [self.fpn1, self.fpn2, self.fpn3, self.fpn4]
         for i in range(len(features)):
-            print(features[i].shape)
             features[i] = ops[i](features[i])
 
         return tuple(features)
 
     def forward(self, x):
-        x = self.forward_features(x)
+        x = self.forward_features(x.float())
         return x

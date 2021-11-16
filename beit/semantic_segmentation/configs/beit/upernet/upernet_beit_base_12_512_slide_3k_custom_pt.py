@@ -13,7 +13,7 @@
 # recommand use this config for BEiT models which are self-supervised pretrained on imagenet
 _base_ = [
     '../../_base_/models/upernet_beit.py', '../../_base_/datasets/aerial_512.py',
-    '../../_base_/default_runtime.py', '../../_base_/schedules/schedule_160k.py'
+    '../../_base_/default_runtime.py', '../../_base_/schedules/schedule_3k.py'
 ]
 crop_size = (512, 512)
 
@@ -31,16 +31,16 @@ model = dict(
         use_rel_pos_bias=True,
         init_values=0.1,
         drop_path_rate=0.1,
-        out_indices=[3, 5, 7, 11]
+        out_indices=[3, 5, 7, 11],
     ),
     decode_head=dict(
         in_channels=[768, 768, 768, 768],
-        num_classes=150,
+        num_classes=2,
         channels=768,
     ),
     auxiliary_head=dict(
         in_channels=768,
-        num_classes=1
+        num_classes=2,
     ), 
     test_cfg = dict(mode='slide', crop_size=crop_size, stride=(341, 341))
 )
@@ -62,9 +62,9 @@ lr_config = dict(_delete_=True, policy='poly',
                  power=1.0, min_lr=0.0, by_epoch=False)
 
 # By default, models are trained on 8 GPUs with 2 images per GPU
-#data=dict(samples_per_gpu=2)
+data=dict(samples_per_gpu=8)
 
-runner = dict(type='IterBasedRunnerAmp')
+runner = dict(type='IterBasedRunner')
 
 # do not use mmdet version fp16
 fp16 = None

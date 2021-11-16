@@ -2,10 +2,10 @@
 
 
 dataset_type = 'AerialImages'
-data_root = '/home/sandej17/building_segmentation/datasets/kartai_ksand_manuell_512'
+data_root = '/home/sandej17/building_segmentation/datasets/kartai_ksand_manuell_224'
 img_norm_cfg = dict(
     mean=[88.995, 97.073, 95.582], std=[68.66, 65.887, 67.550], to_rgb=True)
-crop_size = (512, 512)
+crop_size = (224, 224)
 classes = ("background", "building")
 palette = [[57, 255, 20], [255, 16, 240]]
 train_pipeline = [
@@ -25,7 +25,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(512, 512),
+        img_scale=(224, 224),
         # img_ratios=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
         #flip=False,
         transforms=[
@@ -37,7 +37,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=16,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
