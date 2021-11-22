@@ -49,6 +49,8 @@ def train_one_epoch(model: torch.nn.Module, d_vae: torch.nn.Module,
         with torch.no_grad():
             input_ids = d_vae.get_codebook_indices(images).flatten(1)
             bool_masked_pos = bool_masked_pos.flatten(1).to(torch.bool)
+            print(bool_masked_pos)
+            print(input_ids)
             labels = input_ids[bool_masked_pos]
 
         outputs = model(samples, bool_masked_pos=bool_masked_pos, return_all_tokens=False)
