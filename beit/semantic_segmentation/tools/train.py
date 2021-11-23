@@ -159,7 +159,9 @@ def main():
     print(datasets[0].CLASSES)
     print(len(datasets[0].PALETTE))
     model.CLASSES = datasets[0].CLASSES
-    print(datasets[0][0]["gt_semantic_seg"])
+    print(datasets[0][0]["img"].shape)
+    print(len(datasets[0]))
+    print(datasets[0][0]["gt_semantic_seg"].shape)
     print(np.unique(datasets[0][0]["gt_semantic_seg"]))
     print(datasets[0].ignore_index)
     print(datasets[0].label_map)
