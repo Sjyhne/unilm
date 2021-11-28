@@ -33,7 +33,7 @@ class VisionTransformerForMaskedImageModeling(nn.Module):
     def __init__(self, img_size=224, patch_size=16, in_chans=3, vocab_size=8192, embed_dim=768, depth=12,
                  num_heads=12, mlp_ratio=4., qkv_bias=True, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0., norm_layer=None, init_values=None, attn_head_dim=None,
-                 use_abs_pos_emb=True, use_rel_pos_bias=False, use_shared_rel_pos_bias=False, init_std=0.02):
+                 use_abs_pos_emb=True, use_rel_pos_bias=False, use_shared_rel_pos_bias=False, init_std=0.02, **kwargs):
         super().__init__()
         self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
 
@@ -153,7 +153,6 @@ def beit_base_patch16_224_8k_vocab(pretrained=False, **kwargs):
 
 @register_model
 def beit_large_patch16_224_8k_vocab(pretrained=False, **kwargs):
-    _ = kwargs.pop("num_classes")
     model = VisionTransformerForMaskedImageModeling(
         patch_size=16, embed_dim=1024, depth=24, num_heads=16, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), vocab_size=8192, **kwargs)
@@ -167,10 +166,9 @@ def beit_large_patch16_224_8k_vocab(pretrained=False, **kwargs):
 
 
 @register_model
-def beit_large_patch16_512_8k_vocab(pretrained=False, **kwargs):
-    #_ = kwargs.pop("num_classes")
+def beit_base_patch16_512_8k_vocab(pretrained=False, **kwargs):
     model = VisionTransformerForMaskedImageModeling(
-        img_size=512, patch_size=16, embed_dim=1024, depth=24, num_heads=16, mlp_ratio=4, qkv_bias=True,
+        img_size=512, patch_size=16, embed_dim=768, depth=12, num_heads=14, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), vocab_size=8192, **kwargs)
     model.default_cfg = _cfg()
     if pretrained:

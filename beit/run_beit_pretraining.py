@@ -29,12 +29,14 @@ from utils import NativeScalerWithGradNormCount as NativeScaler
 import utils
 import modeling_pretrain
 
+import wandb
+
 
 def get_args():
     parser = argparse.ArgumentParser('BEiT pre-training script', add_help=False)
     parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--epochs', default=300, type=int)
-    parser.add_argument('--save_ckpt_freq', default=20, type=int)
+    parser.add_argument('--save_ckpt_freq', default=8, type=int)
     parser.add_argument("--discrete_vae_weight_path", type=str)
     parser.add_argument("--discrete_vae_type", type=str, default="dall-e")
     # Model parameters
@@ -58,16 +60,16 @@ def get_args():
     parser.add_argument('--second_input_size', default=112, type=int,
                         help='images input size for discrete vae')
 
-    parser.add_argument('--drop_path', type=float, default=0.1, metavar='PCT',
-                        help='Drop path rate (default: 0.1)')
+    parser.add_argument('--drop_path', type=float, default=0, metavar='PCT',
+                        help='Drop path rate (default: 0)')
 
     # Optimizer parameters
     parser.add_argument('--opt', default='adamw', type=str, metavar='OPTIMIZER',
                         help='Optimizer (default: "adamw"')
     parser.add_argument('--opt_eps', default=1e-8, type=float, metavar='EPSILON',
                         help='Optimizer Epsilon (default: 1e-8)')
-    parser.add_argument('--opt_betas', default=None, type=float, nargs='+', metavar='BETA',
-                        help='Optimizer Betas (default: None, use opt default)')
+    parser.add_argument('--opt_betas', default=[0.9, 0.98], type=float, nargs='+', metavar='BETA',
+                        help='Optimizer Betas (default: [0.9, 0.98], use opt default)')
     parser.add_argument('--clip_grad', type=float, default=None, metavar='NORM',
                         help='Clip gradient norm (default: None, no clipping)')
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
@@ -91,8 +93,6 @@ def get_args():
                         help='epochs to warmup LR, if scheduler supports')
 
     # Augmentation parameters
-    parser.add_argument('--color_jitter', type=float, default=0.4, metavar='PCT',
-                        help='Color jitter factor (default: 0.4)')
     parser.add_argument('--train_interpolation', type=str, default='bicubic',
                         help='Training interpolation (random, bilinear, bicubic default: "bicubic")')
     parser.add_argument('--second_interpolation', type=str, default='lanczos',
@@ -117,7 +117,7 @@ def get_args():
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                         help='start epoch')
-    parser.add_argument('--num_workers', default=10, type=int)
+    parser.add_argument('--num_workers', default=8, type=int)
     parser.add_argument('--pin_mem', action='store_true',
                         help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
     parser.add_argument('--no_pin_mem', action='store_false', dest='pin_mem',
@@ -131,6 +131,8 @@ def get_args():
     parser.add_argument('--dist_on_itp', action='store_true')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     parser.add_argument('--nb_classes', default=2, help="Number of classes to predict")
+    parser.add_argument('--mean', default=[0.5, 0.5, 0.5], nargs="*", type=float, help="Image means of training dataset")
+    parser.add_argument('--std', default=[0.5, 0.5, 0.5], nargs="*", type=float, help="Image std of training dataset")
 
     return parser.parse_args()
 
@@ -151,8 +153,8 @@ def get_model(args):
 
 
 def main(args):
-
-    print("ARGS:!!!", args)
+    
+    wandb.init(project="beit-pretraining", entity="sjyhne", config=args)
 
     device = torch.device(args.device)
 
@@ -225,6 +227,8 @@ def main(args):
 
     utils.auto_load_model(
         args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer, loss_scaler=loss_scaler)
+    
+    wandb.watch(model, criterion=loss_scaler)
 
     print(f"Start training for {args.epochs} epochs")
     start_time = time.time()
@@ -241,6 +245,7 @@ def main(args):
             lr_schedule_values=lr_schedule_values,
             wd_schedule_values=wd_schedule_values,
         )
+        wandb.log(train_stats)
         if args.output_dir:
             if (epoch + 1) % args.save_ckpt_freq == 0 or epoch + 1 == args.epochs:
                 utils.save_model(

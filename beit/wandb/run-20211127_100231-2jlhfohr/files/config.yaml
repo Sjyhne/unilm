@@ -1,0 +1,172 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.12.7
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.6
+    start_time: 1638007351
+    t:
+      1:
+      - 1
+      2:
+      - 1
+      3:
+      - 16
+      4: 3.8.6
+      5: 0.12.7
+      8:
+      - 5
+abs_pos_emb:
+  desc: null
+  value: false
+auto_resume:
+  desc: null
+  value: true
+batch_size:
+  desc: null
+  value: 32
+clip_grad:
+  desc: null
+  value: 3.0
+color_jitter:
+  desc: null
+  value: 0.4
+data_path:
+  desc: null
+  value: /home/sandej17/building_segmentation/beit_pretraining_data_224
+device:
+  desc: null
+  value: cuda
+discrete_vae_type:
+  desc: null
+  value: dall-e
+discrete_vae_weight_path:
+  desc: null
+  value: /home/sandej17/building_segmentation/beit/dalle_weights
+dist_on_itp:
+  desc: null
+  value: false
+dist_url:
+  desc: null
+  value: env://
+drop_path:
+  desc: null
+  value: 0.1
+epochs:
+  desc: null
+  value: 10
+imagenet_default_mean_and_std:
+  desc: null
+  value: false
+input_size:
+  desc: null
+  value: 224
+layer_scale_init_value:
+  desc: null
+  value: 0.1
+local_rank:
+  desc: null
+  value: -1
+log_dir:
+  desc: null
+  value: null
+lr:
+  desc: null
+  value: 0.0015
+max_mask_patches_per_block:
+  desc: null
+  value: null
+mean:
+  desc: null
+  value:
+  - 0.43
+  - 0.46
+  - 0.45
+min_lr:
+  desc: null
+  value: 1.0e-05
+min_mask_patches_per_block:
+  desc: null
+  value: 16
+model:
+  desc: null
+  value: beit_base_patch16_224_8k_vocab
+momentum:
+  desc: null
+  value: 0.9
+nb_classes:
+  desc: null
+  value: 2
+num_mask_patches:
+  desc: null
+  value: 75
+num_workers:
+  desc: null
+  value: 8
+opt:
+  desc: null
+  value: adamw
+opt_betas:
+  desc: null
+  value: null
+opt_eps:
+  desc: null
+  value: 1.0e-08
+output_dir:
+  desc: null
+  value: pretraining_output_dir/
+pin_mem:
+  desc: null
+  value: true
+rel_pos_bias:
+  desc: null
+  value: true
+resume:
+  desc: null
+  value: ''
+save_ckpt_freq:
+  desc: null
+  value: 50
+second_input_size:
+  desc: null
+  value: 112
+second_interpolation:
+  desc: null
+  value: lanczos
+seed:
+  desc: null
+  value: 0
+start_epoch:
+  desc: null
+  value: 0
+std:
+  desc: null
+  value:
+  - 0.16
+  - 0.18
+  - 0.2
+train_interpolation:
+  desc: null
+  value: bicubic
+warmup_epochs:
+  desc: null
+  value: 1
+warmup_lr:
+  desc: null
+  value: 1.0e-06
+warmup_steps:
+  desc: null
+  value: -1
+weight_decay:
+  desc: null
+  value: 0.05
+weight_decay_end:
+  desc: null
+  value: null
+world_size:
+  desc: null
+  value: 1
